@@ -6,10 +6,12 @@ import { CoreModule } from './core/core.module';
 import { UsersController } from './modules/users/users.controller';
 import { UsersService } from './modules/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
     CoreModule,
+    UsersModule,
     JwtModule.register({
       global: true,
       secret: 'super_secret_key',
