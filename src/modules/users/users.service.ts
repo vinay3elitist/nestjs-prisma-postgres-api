@@ -61,7 +61,7 @@ export class UsersService {
 
       // check if user exists
       if (!user) {
-        throw new NotFoundException('Not Found User!');
+        throw new NotFoundException('User Not Found!');
       }
 
       // check if password is correct by comparing it with hashed password
@@ -89,7 +89,7 @@ export class UsersService {
   // asymc updateUser
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     try {
-      // find user by email, if not found throw error
+      // find user by id, if not found throw error
       await this.prisma.user.findUniqueOrThrow({
         where: { id },
       });
