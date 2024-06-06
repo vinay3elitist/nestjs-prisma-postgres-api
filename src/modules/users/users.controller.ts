@@ -8,25 +8,32 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 import { User } from '@prisma/client';
-import { LoginResponse } from './interfaces/users-login.interface';
+import { LoginResponse, UserPayload } from './interfaces/users-login.interface';
+import { ExpressRequestWithUser } from './interfaces/exress-request-with-user.interface';
+import { Public } from 'src/common/decorators/public.decorator';
+import { IsMineGuard } from 'src/common/guards/is-mine.guard';
 
 @Controller('users')
 export class UsersController {
   // inject user service
   constructor(private readonly userService: UsersService) {}
 
+  @Public()
   @Post('register')
   registerUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     // call the users service method to register the user
     return this.userService.registerUser(createUserDto);
   }
 
+  @Public()
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto): Promise<LoginResponse> {
     // call the users service method to login the user
@@ -34,12 +41,13 @@ export class UsersController {
   }
 
   @Get('profile')
-  profile(): string {
-    return 'User profile';
+  profile(@Request() req: ExpressRequestWithUser): UserPayload {
+    return req.user;
   }
 
   @Patch(':id')
-  updateUser(
+  @UseGuards(IsMineGuard)
+  async updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
@@ -48,7 +56,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  deleteUser(@Param('id', ParseIntPipe) id: number): Promise<string> {
+  @UseGuards(IsMineGuard)
+  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<string> {
     // call the users service method to delete the user
     return this.userService.deleteUser(+id);
   }

@@ -7,6 +7,8 @@ import { UsersController } from './modules/users/users.controller';
 import { UsersService } from './modules/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './modules/users/users.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './common/guards/auth.guard';
 
 @Module({
   imports: [
@@ -14,11 +16,18 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     JwtModule.register({
       global: true,
-      secret: 'super_secret_key',
+      secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: '1h' },
     }),
   ],
   controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  providers: [
+    AppService,
+    UsersService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}
