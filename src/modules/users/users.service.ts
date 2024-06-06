@@ -13,6 +13,7 @@ import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { LoginResponse, UserPayload } from './interfaces/users-login.interface';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -80,12 +81,50 @@ export class UsersService {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
-        // throw error if any 
-        throw new HttpException(error, 500);
+      // throw error if any
+      throw new HttpException(error, 500);
     }
   }
 
   // asymc updateUser
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    try {
+      // find user by email, if not found throw error
+      await this.prisma.user.findUniqueOrThrow({
+        where: { id },
+      });
+
+      // update user using prisma client
+      const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...updateUserDto,
+          // if password is provided, then hash it
+          ...(updateUserDto.password && {
+            password: await hash(updateUserDto.password, 10),
+          }),
+        },
+      });
+
+      // delete password from updated user object
+      delete updatedUser.password;
+
+      return updatedUser;
+    } catch (error) {
+      // check if user not found and throw error
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+
+      // check if email already registered and throw error
+      if (error.code === 'P2002') {
+        throw new ConflictException('Email already registered');
+      }
+
+      // throw error if any
+      throw new HttpException(error, 500);
+    }
+  }
 
   // async deleteUser
 }
