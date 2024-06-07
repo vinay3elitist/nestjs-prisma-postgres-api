@@ -61,6 +61,19 @@ export class PostsController {
     return this.postsService.getAllPosts();
   }
 
+  /**
+   * Retrieves a post by its ID from the database.
+   *
+   * @param id - The unique identifier of the post to retrieve.
+   * @returns A promise that resolves to the requested post.
+   *
+   * @remarks
+   * This method is decorated with `@Public` to allow access to all users.
+   * It uses the `ParseIntPipe` to convert the `id` parameter from string to number.
+   *
+   * @throws Will throw an error if the retrieval of the post fails.
+   * @throws Will throw an error if the `id` parameter is not a valid number.
+   */
   @Public()
   @Get(':id')
   getPostById(@Param('id', ParseIntPipe) id: number): Promise<CPost> {
