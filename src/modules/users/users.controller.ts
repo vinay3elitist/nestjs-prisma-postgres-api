@@ -26,6 +26,35 @@ export class UsersController {
   // inject user service
   constructor(private readonly userService: UsersService) {}
 
+  // Controller for RAW Query based services
+  // register a new user with raw query
+  @Public()
+  @Post('create')
+  registerUserWithRawQuery(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<User> {
+    return this.userService.registerUserWithRawQuery(createUserDto);
+  }
+
+  // get all users with raw query
+  @Public()
+  @Get('allusers')
+  getAllUser(): Promise<User[]> {
+    return this.userService.getAllUsers();
+  }
+
+  // update the user with raw query
+  @Patch('update/:id')
+  @UseGuards(IsMineGuard)
+  async updateUserWithRawQuery(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    return await this.userService.updateUserWithRawQuery(id, updateUserDto);
+  }
+
+  // ----------------------------------------------------------------
+  // Contoller for prisma client services
   /**
    * Registers a new user.
    *

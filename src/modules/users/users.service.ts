@@ -13,6 +13,7 @@ import { LoginUserDto } from './dtos/login-user.dto';
 import { LoginResponse, UserPayload } from './interfaces/users-login.interface';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import ErrorHandler from 'src/helper/errorHandler';
+import { queries } from 'src/raw query/rawQuery';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +22,67 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
+  // Functions based on RAW Query
+  // get all users raw query based
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const users: User[] = await this.prisma.$queryRaw(queries.GET_ALL_USERS);
+      users.forEach((user) => {
+        delete user.password;
+      });
+      return users;
+    } catch (error) {
+      ErrorHandler.handle(error, 'User');
+    }
+  }
+
+  //register new user raw query based
+  async registerUserWithRawQuery(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const { email, password, name } = createUserDto;
+      const hasedPassword = await hash(password, 10);
+
+      await this.prisma.$executeRaw(
+        queries.CREATE_USER(email, hasedPassword, name),
+      );
+
+      const newUser = await this.prisma.$queryRaw(
+        queries.GET_USER_BY_EMAIL(email),
+      );
+      delete newUser[0].password;
+
+      return newUser[0];
+    } catch (error) {
+      ErrorHandler.handle(error, 'User');
+    }
+  }
+
+  // update user raw query based
+  async updateUserWithRawQuery(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    try {
+      // const { email, password, name } = updateUserDto;
+      const user = await this.prisma.$queryRaw(queries.GET_USER_BY_ID(id));
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      await this.prisma.$executeRaw(queries.UPDATE_USER(id, updateUserDto));
+
+      const newUser = await this.prisma.$queryRaw(queries.GET_USER_BY_ID(id));
+      delete newUser[0].password;
+
+      return newUser[0];
+    } catch (error) {
+      ErrorHandler.handle(error, 'User');
+    }
+  }
+
+  // ----------------------------------------------------------------
+  // Functions based on prisma client
   /**
    * Registers a new user in the system.
    *
