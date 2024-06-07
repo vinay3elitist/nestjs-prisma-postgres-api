@@ -1,7 +1,5 @@
 /* eslint-disable prettier/prettier */
 import {
-  ConflictException,
-  HttpException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -14,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { LoginResponse, UserPayload } from './interfaces/users-login.interface';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import ErrorHandler from 'src/helper/errorHandler';
 
 @Injectable()
 export class UsersService {
@@ -46,13 +45,7 @@ export class UsersService {
 
       return newUser;
     } catch (error) {
-      // check if email already registered and throw error
-      if (error.code === 'P2002') {
-        throw new ConflictException('Email already registered');
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'User');
     }
   }
 
@@ -96,8 +89,7 @@ export class UsersService {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'User');
     }
   }
 
@@ -135,18 +127,7 @@ export class UsersService {
 
       return updatedUser;
     } catch (error) {
-      // check if user not found and throw error
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`User with id ${id} not found`);
-      }
-
-      // check if email already registered and throw error
-      if (error.code === 'P2002') {
-        throw new ConflictException('Email already registered');
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'User', id);
     }
   }
 
@@ -172,13 +153,7 @@ export class UsersService {
 
       return `User with id ${user.id} deleted`;
     } catch (error) {
-      // check if user not found and throw error
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`User with id ${id} not found`);
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'User', id);
     }
   }
 }

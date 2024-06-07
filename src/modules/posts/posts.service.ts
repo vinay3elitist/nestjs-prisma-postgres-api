@@ -1,14 +1,10 @@
 /* eslint-disable prettier/prettier */
-import {
-  ConflictException,
-  HttpException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { PrismaService } from 'src/core/services/prisma.service';
 import { Post } from '@prisma/client';
+import ErrorHandler from 'src/helper/errorHandler';
 
 @Injectable()
 export class PostsService {
@@ -33,17 +29,7 @@ export class PostsService {
 
       return newPost;
     } catch (error) {
-      // check if email alreay registered and throw error
-      if (error.code === 'P2002') {
-        throw new ConflictException('Email already registered');
-      }
-
-      if (error.code === 'P2003') {
-        throw new NotFoundException('Author not found');
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'Post');
     }
   }
 
@@ -55,7 +41,6 @@ export class PostsService {
    */
   async getAllPosts(): Promise<Post[]> {
     const posts = await this.prisma.post.findMany();
-
     return posts;
   }
 
@@ -76,13 +61,7 @@ export class PostsService {
 
       return post;
     } catch (error) {
-      // check if post not found and throw error
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Post with id ${id} not found`);
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'Post', id);
     }
   }
 
@@ -113,18 +92,7 @@ export class PostsService {
 
       return updatedPost;
     } catch (error) {
-      // check if post not found and throw error
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Post with id ${id} not found`);
-      }
-
-      // check if email alreay registered and throw error
-      if (error.code === 'P2002') {
-        throw new ConflictException('Email already registered');
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'Post', id);
     }
   }
 
@@ -150,13 +118,7 @@ export class PostsService {
 
       return `Post with id ${id} deleted successfully`;
     } catch (error) {
-      // check if post not found and throw error
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Post with id ${id} not found`);
-      }
-
-      // throw error if any
-      throw new HttpException(error, 500);
+      ErrorHandler.handle(error, 'Post', id);
     }
   }
 }
