@@ -22,7 +22,14 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  // async registerUser
+  /**
+   * Registers a new user in the system.
+   *
+   * @param createUserDto - The data required to create a new user.
+   * @returns A promise that resolves to the newly created user object, without the password.
+   * @throws ConflictException - If the email provided is already registered.
+   * @throws HttpException - If any other error occurs during the registration process.
+   */
   async registerUser(createUserDto: CreateUserDto): Promise<User> {
     try {
       // create new user using prisma client
@@ -49,7 +56,15 @@ export class UsersService {
     }
   }
 
-  // async loginUser
+  /**
+   * Authenticates a user and returns a JWT access token.
+   *
+   * @param loginUserDto - The data required to authenticate the user.
+   * @returns A promise that resolves to a LoginResponse object containing the access token.
+   * @throws NotFoundException - If the user with the provided email is not found.
+   * @throws UnauthorizedException - If the provided password does not match the user's password.
+   * @throws HttpException - If any other error occurs during the login process.
+   */
   async loginUser(loginUserDto: LoginUserDto): Promise<LoginResponse> {
     try {
       // find user by email
@@ -86,7 +101,16 @@ export class UsersService {
     }
   }
 
-  // asymc updateUser
+  /**
+   * Updates a user in the system.
+   *
+   * @param id - The unique identifier of the user to be updated.
+   * @param updateUserDto - The data required to update the user.
+   * @returns A promise that resolves to the updated user object, without the password.
+   * @throws NotFoundException - If the user with the provided id is not found.
+   * @throws ConflictException - If the email provided is already registered for another user.
+   * @throws HttpException - If any other error occurs during the update process.
+   */
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     try {
       // find user by id, if not found throw error
@@ -126,7 +150,14 @@ export class UsersService {
     }
   }
 
-  // async deleteUser
+  /**
+   * Deletes a user from the system.
+   *
+   * @param id - The unique identifier of the user to be deleted.
+   * @returns A promise that resolves to a string message indicating the successful deletion.
+   * @throws NotFoundException - If the user with the provided id is not found.
+   * @throws HttpException - If any other error occurs during the deletion process.
+   */
   async deleteUser(id: number): Promise<string> {
     try {
       // find user by id, if not found throw error
